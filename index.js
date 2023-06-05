@@ -6,13 +6,13 @@ async function getPageContent() {
   await page.goto("https://tradingview.com/symbols/EURUSD/technicals/");
 
   await page.waitForSelector(
-    'button[role="tab"][aria-selected="false"][id="15m"]'
+    'button[role="tab"][aria-selected="false"][id="5m"]'
   );
 
   await page.click('button[role="tab"][aria-selected="false"][id="15m"]');
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  
+
   const elements = await page.$$(".tableWrapper-hvDpy38G");
 
   const elementTable = await page.evaluate(
@@ -40,6 +40,7 @@ function parseTableData(elementTable) {
 }
 
 async function getData() {
+  console.log(new Date())
   const elementTable = await getPageContent();
   const objects = parseTableData(elementTable);
 
@@ -48,4 +49,8 @@ async function getData() {
   }
 }
 
+// Chama a função getData inicialmente
 getData();
+
+// Executa a função getData a cada 10 minutos
+setInterval(getData, 10 * 60 * 1000);
