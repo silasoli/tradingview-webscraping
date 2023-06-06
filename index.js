@@ -6,10 +6,10 @@ async function getPageContent() {
   await page.goto("https://tradingview.com/symbols/EURUSD/technicals/");
 
   await page.waitForSelector(
-    'button[role="tab"][aria-selected="false"][id="5m"]'
+    'button[role="tab"][aria-selected="false"][id="1m"]'
   );
 
-  await page.click('button[role="tab"][aria-selected="false"][id="15m"]');
+  await page.click('button[role="tab"][aria-selected="false"][id="1m"]');
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -25,16 +25,29 @@ async function getPageContent() {
   return elementTable;
 }
 
+function removeWordsAtStart(string) {
+  const wordsAtStart = ["Sell", "Buy", "Neutral"];
+
+  for (let word of wordsAtStart) {
+    if (string.startsWith(word)) {
+      string = string.slice(word.length).trim();
+    }
+  }
+
+  return string;
+}
+
 function parseTableData(elementTable) {
   const prefix = "NameValueAction";
   elementTable = elementTable.substring(prefix.length);
 
-  const pattern = /([A-Z][\w\s]+? \(\d+\))(\d\.\d{5})(Sell|Buy|Neutral|—)/g;
-  const objects = [...elementTable.matchAll(pattern)].map((match) => ({
-    name: match[1],
-    value: match[2],
-    action: match[3],
-  }));
+  const pattern = /([A-Z][\w\s]+?) \(\d+\)(\d\.\d{5})(Sell|Buy|Neutral|—)/g;
+  const objects = [...elementTable.matchAll(pattern)].map((match) => {
+    const name = removeWordsAtStart(match[1].trim());
+    const value = match[2];
+    const action = match[3];
+    return { name, value, action };
+  });
 
   return objects;
 }
